@@ -27,3 +27,8 @@
 *.exe
 *.out
 *.app
+
+*.3dm
+*.ngc
+Makefile
+bin-*
