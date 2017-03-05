@@ -26,5 +26,7 @@ class machineSettings : public rcamObject
     
   private:
     QList<QTreeWidgetItem*> settingsTreeItem;
+    
+    void polishTreeLabel();
 };
 #endif

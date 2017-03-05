@@ -24,7 +24,7 @@ class rcamObject : public QObject
 
     void readXML(QDomElement root);
     void writeXML(QIODevice *xml);
-
+    QVariant findSettingValue(QString name);
 
   public slots:
     void executeTree();
@@ -44,7 +44,7 @@ class rcamObject : public QObject
     
     QAction *executeAction;
     QAction *executeTreeAction;
-    QList<QAction*> createProcessAction;
+    QList<QAction*> objectAction;
     
     QList<editableSetting*> setting;
     

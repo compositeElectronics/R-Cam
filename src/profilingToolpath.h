@@ -8,8 +8,6 @@ class profilingToolpath : public genericToolpath
   public:
     profilingToolpath(machineSettings *settings, const ONX_Model* modelGeom);
   
-    void printPath();
-  
   private:
     void calcToolPath(const ON_Curve* curve);
     

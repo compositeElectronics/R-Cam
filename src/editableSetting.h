@@ -2,12 +2,13 @@
   #define EDITABLESETTING_H
 
   #include <QObject>
+  #include <QCheckBox>
   #include <QSpinBox>
   #include <QDoubleSpinBox>
   #include <QLabel>
   #include <QString>
   #include <QList>
-  #include <QTreeWidget>
+  #include <QTreeWidget>  
   #include <QMenu>
   #include <QIODevice>
   #include <QDomDocument>
@@ -18,6 +19,7 @@ class editableSetting : public QObject
   public:
     editableSetting(QString settingName, QString settingLabel, QVariant settingData, QVariant min, QVariant max, QObject *parent=0);
 
+    QString settingName();
     QWidget* label();
     QWidget* editor();
     QVariant data();
@@ -37,6 +39,7 @@ class editableSetting : public QObject
 
     QLabel *labelWidget;
     QLabel *noEditLabel;
+    QCheckBox *checkBox;
     QSpinBox *intSpinBox;
     QDoubleSpinBox *dblSpinBox;
 };

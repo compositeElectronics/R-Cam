@@ -13,6 +13,7 @@ HEADERS += mainWindow.h \
            odMatrix.h \
            rcamObject.h \
            editableSetting.h \
+           geomReference.h \
            genericTool.h \
            engravingTool.h \
            genericToolpath.h \
@@ -29,6 +30,7 @@ SOURCES += main.cpp \
            odMatrix.cpp \
            rcamObject.cpp \
            editableSetting.cpp \
+           geomReference.cpp \
            genericTool.cpp \
            engravingTool.cpp \
            genericToolpath.cpp \
@@ -39,7 +41,7 @@ SOURCES += main.cpp \
            projectTreeDock.cpp \
            settingsDock.cpp
            
-LIBS += libopenNURBS-20130711.a
+LIBS += opennurbs_20130711/libopenNURBS.a
 
 ARCH  = $$system("uname -m")
 OPSYS = $$system("uname")

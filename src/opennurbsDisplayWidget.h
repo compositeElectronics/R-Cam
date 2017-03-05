@@ -4,7 +4,8 @@
   #include <QWidget>
   #include <QPen>
   #include "opennurbs_20130711/opennurbs.h"
-  
+  #include "geomReference.h"
+
 class opennurbsDisplayWidget : public QWidget
 {
   Q_OBJECT
@@ -15,13 +16,15 @@ class opennurbsDisplayWidget : public QWidget
     void centreAndZoom();
     
     void setObjectDrawn(int obj);
-    void setObjectSelected(int obj);
+    void setSelectedObjects(QList<geomReference*> objs);
+    void setSelectedObjects(geomReference* objs);
+    void clearSelectedObjects();
     void setShowMarkers(bool show);
     void setAutoCenterAndZoom(bool autoCenter);
     
   private:
     int drawObject;
-    int selectedObject;
+    QList<geomReference*> selectedObjects;
     bool hasModel;
     bool showMarkers;
     bool autoCenterAndZoom;

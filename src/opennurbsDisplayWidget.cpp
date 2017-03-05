@@ -22,11 +22,11 @@ opennurbsDisplayWidget::opennurbsDisplayWidget(QWidget *parent) : QWidget(parent
   selectColour=QColor(230,230,0);
   
   drawObject=-1; // By default draw all objects.
-  selectedObject=-1; // By default no object selected.
   hasModel=false;
   showMarkers=false;
   autoCenterAndZoom=false;
   offset=QPointF(0,0);
+  setMinimumSize(100, 100);
 }
 
 void opennurbsDisplayWidget::setModelGeometry(ONX_Model *geometry){
@@ -38,10 +38,23 @@ void opennurbsDisplayWidget::setObjectDrawn(int obj){
   drawObject=obj;
 }
 
-void opennurbsDisplayWidget::setObjectSelected(int obj){
-  selectedObject=obj;
+void opennurbsDisplayWidget::setSelectedObjects(QList<geomReference*> objs){
+  selectedObjects.clear();
+  selectedObjects.append(objs);
+  update();
 }
 
+void opennurbsDisplayWidget::setSelectedObjects(geomReference* objs){
+  selectedObjects.clear();
+  selectedObjects.append(objs);
+  update();
+}
+
+void opennurbsDisplayWidget::clearSelectedObjects(){
+  selectedObjects.clear();
+  update();
+}
+  
 void opennurbsDisplayWidget::setShowMarkers(bool show){
   showMarkers=show;
 }
@@ -132,6 +145,7 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   const ON_Object* geom=0;
   ON_Color objColor;
   QPen modelPen;
+  int i;
   const ONX_Model_Object& mo = model->m_object_table[objIndex];
   
   if (ON::color_from_layer==mo.m_attributes.ColorSource())  objColor=model->m_layer_table[mo.m_attributes.m_layer_index].Color();
@@ -145,7 +159,19 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   // determine where to get the definition of the object's render material.
     
   modelPen.setColor(QColor(objColor.Red(), objColor.Green(), objColor.Blue()));
-  if (objIndex==selectedObject) modelPen.setColor(selectColour);
+//  char *mref, *selref;
+//  mref = new char[38];
+//  selref = new char[38];
+  for (i=0;i<selectedObjects.count();i++){
+//    mref=ON_UuidToString( mo.m_attributes.m_uuid , mref);
+//    selref=ON_UuidToString( selectedObjects[i]->ref , selref);
+//    printf("Checking ModelRef %s against Selected %s\n", mref, selref);
+    if (mo.m_attributes.m_uuid==selectedObjects[i]->ref){
+      modelPen.setColor(selectColour);
+      break;
+    }
+  }
+  
   modelPen.setWidth(2);
   modelPen.setStyle(Qt::SolidLine);
   painter->setPen(modelPen);

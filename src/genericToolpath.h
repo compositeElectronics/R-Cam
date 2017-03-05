@@ -1,30 +1,35 @@
 #ifndef GENERICTOOLPATH_H
   #define GENERICTOOLPATH_H
-  
+
+#include <QIODevice>
 #include "genericTool.h"
 #include "rcamObject.h"
 #include "opennurbs_20130711/opennurbs.h"
 #include "odPoint.h"
 #include "machineSettings.h"
-
+#include "geomReference.h"
 
 class genericToolpath : public rcamObject
 {
-
+  Q_OBJECT
   public:
     genericToolpath(machineSettings *settings, const ONX_Model* modelGeom, QString type);
     
     machineSettings *machine;
     genericTool *tool;
     const ONX_Model* geom;
+    QList<geomReference*> geometry;
     
     void calculateToolPath();
-    virtual void printPath();
+    void writePath(QIODevice *io);
     
   protected:
-    QList<odPoint> path;
-    QList<ON_UUID> objectUUID;
+    QStringList path;
     
+    void createMenu();
     virtual void calcToolPath(const ON_Curve *curve);
+    
+  private slots:
+    void addGeometryByLayer();
 };
 #endif

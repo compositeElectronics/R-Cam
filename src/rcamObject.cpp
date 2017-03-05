@@ -42,8 +42,8 @@ void rcamObject::createMenu(){
   v.setValue((void *)this);
   treeItem->setData(0, Qt::UserRole, v);
   
-  treeItemMenu = new QMenu("Create Process");
-  createProcessAction.append(treeItemMenu->addAction("Test"));
+  treeItemMenu = new QMenu(p_type);
+//  objectAction.append(treeItemMenu->addAction("Example"));
 }
 
 QWidget* rcamObject::settingsTable(){
@@ -118,4 +118,13 @@ void rcamObject::readXML(QDomElement root){
 }
 
 void rcamObject::readXMLElement(QDomElement element){
+}
+
+QVariant rcamObject::findSettingValue(QString name){
+  int i;
+  for (i=0;i<setting.count();i++){
+    if (setting[i]->settingName()==name) return setting[i]->data();
+  }
+  
+  return QVariant();
 }
