@@ -136,7 +136,7 @@ void mainWindow::treeItemActivated(QTreeWidgetItem *item, int column){
   objectSettings->setRcamObject(bObj);
   if (gentoolpath){
     printf("Item matches (at least) generic tool path\n");
-    geomDisplay->setSelectedObjects(gentoolpath->geometry);
+//    geomDisplay->setSelectedObjects(gentoolpath->geometry);
     return;
   }
   if (geoRef){

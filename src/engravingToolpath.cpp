@@ -10,7 +10,7 @@ void engravingToolpath::polishTreeLabel(){
   treeItem->setText(0,QString("Engraving Toolpath"));  
 }
 
-void engravingToolpath::calcToolPath(const ON_Curve* curve){
+void engravingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomRef){
   // The engrave path is really easy, as you just follow the curve path exactly, moving the cutter down at the start and up at the end.
   // Flatten Z to cut depth to only present XY data.
   double tStart, tEnd;

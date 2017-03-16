@@ -18,7 +18,6 @@ class genericToolpath : public rcamObject
     machineSettings *machine;
     genericTool *tool;
     const ONX_Model* geom;
-    QList<geomReference*> geometry;
     
     void calculateToolPath();
     void writePath(QIODevice *io);
@@ -27,9 +26,10 @@ class genericToolpath : public rcamObject
     QStringList path;
     
     void createMenu();
-    virtual void calcToolPath(const ON_Curve *curve);
+    virtual void calcToolPath(const ON_Curve *curve, geomReference* geomRef);
     
-  private slots:
-    void addGeometryByLayer();
+  protected slots:
+    virtual void addGeometryByLayer();
+    void orderGeoms();
 };
 #endif

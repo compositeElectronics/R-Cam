@@ -9,11 +9,14 @@ class profilingToolpath : public genericToolpath
     profilingToolpath(machineSettings *settings, const ONX_Model* modelGeom);
   
   private:
-    void calcToolPath(const ON_Curve* curve);
+    void calcToolPath(const ON_Curve* curve, geomReference* geomRef);
     
     void polishTreeLabel();
     
     double cutDepth;
     int nCuts;
+    
+  protected slots:
+    void addGeometryByLayer();
 };
 #endif

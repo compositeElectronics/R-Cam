@@ -39,6 +39,8 @@ void genericToolpath::addGeometryByLayer(){
   
   QString item = QInputDialog::getItem(0, "Select geometry by layer", "Layer:", layers, 0, false, &ok);
 
+  if (item.isEmpty()) return;
+  
   layId=-1;
   for (i=0;i<geom->m_layer_table.Count();i++){
     if (item==layers[i]){
@@ -52,7 +54,11 @@ void genericToolpath::addGeometryByLayer(){
   for (objIndex=0;objIndex<geom->m_object_table.Count();objIndex++){
     const ONX_Model_Object &mo = geom->m_object_table[objIndex];
     if (mo.m_attributes.m_layer_index==layId){
-      geometry.append(new geomReference(mo.m_attributes.m_uuid, this));
+      new geomReference(mo.m_attributes.m_uuid, this);
+      printf("Child order is currently:\n");
+      for (i=0;i<children.count();i++){
+        printf("  %i - %s\n", i, children.at(i)->label().toLatin1().data());
+      }
     }
   }
 }
@@ -63,31 +69,41 @@ void genericToolpath::calculateToolPath(){
   const ON_Curve* curve=0;
   bool match=false;
   char line[256];
-    
+  geomReference *geometry;
+  
   path.clear();
 
   path.append("(Set feed and speed)");
   sprintf(line,"F%lf\n", findSettingValue("feedRate").toDouble()); path.append(line);
   sprintf(line,"S%lf\n", findSettingValue("toolRPM").toDouble());  path.append(line);
-        
-  for (objIndex=0;objIndex<geom->m_object_table.Count();objIndex++){
-    const ONX_Model_Object &mo = geom->m_object_table[objIndex];
-    for (i=0;i<geometry.count();i++){
-      if (mo.m_attributes.m_uuid==geometry[i]->ref && geometry[i]->findSettingValue("enabled").toBool()){
+  
+  path.append("G0 Z#<safeZ>");
+
+  for (i=0;i<children.count();i++){
+    geometry = dynamic_cast<geomReference*>(children[i]);
+    if (geometry==0) continue;
+    
+    printf("Calculating %s\n", geometry->label().toLatin1().data());
+
+    for (objIndex=0;objIndex<geom->m_object_table.Count();objIndex++){
+      const ONX_Model_Object &mo = geom->m_object_table[objIndex];
+      
+      if (mo.m_attributes.m_uuid==geometry->ref && geometry->findSettingValue("enabled").toBool()){
         switch(mo.m_object->ObjectType()){
           case ON::curve_object:
             curve = ON_Curve::Cast(mo.m_object);
-            path.append("G0 Z#<safeZ>");
-            if (curve) calcToolPath(curve);
-            path.append("G0 Z#<safeZ>");
+            path.append("G0 Z[#<workZ>+#<rapidZ>]");
+            if (curve) calcToolPath(curve, geometry);
+            path.append("G0 Z[#<workZ>+#<rapidZ>]");
             break;
         }
       }
     }
   }
+  path.append("G0 Z#<safeZ>");
 }
 
-void genericToolpath::calcToolPath(const ON_Curve *curve){
+void genericToolpath::calcToolPath(const ON_Curve *curve, geomReference* geomRef){
 }
 
 void genericToolpath::writePath(QIODevice *io){
@@ -98,3 +114,8 @@ void genericToolpath::writePath(QIODevice *io){
     io->write("\n");
   }
 }
+
+void genericToolpath::orderGeoms(){
+  
+}
+  

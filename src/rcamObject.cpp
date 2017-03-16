@@ -68,6 +68,11 @@ QString rcamObject::type(){
   return p_type;
 }
 
+QString rcamObject::label(){
+  if (treeItem!=0) return treeItem->text(0);
+  return QString("No label");
+}
+    
 void rcamObject::executeTree(){
   int i;
   execute();
@@ -127,4 +132,35 @@ QVariant rcamObject::findSettingValue(QString name){
   }
   
   return QVariant();
+}
+
+int rcamObject::childIndex(rcamObject *query){
+  int i;
+  for (i=0;i<children.count();i++){
+    if (children.at(i)==query) return i;
+  }
+  return -1;
+}
+  
+void rcamObject::moveChild(int from, int to){
+  int i;
+  if (from>=children.count() || from<0) return;
+  if (to>=children.count() || to<0) return;
+  
+  printf("Child order is currently:\n");
+  for (i=0;i<children.count();i++){
+    printf("  %i - %s\n", i, children.at(i)->label().toLatin1().data());
+  }
+  
+  printf("Move child from %i to %i\n", from, to);
+  
+  children.move(from,to);
+  
+  printf("Child order is now:\n");
+  for (i=0;i<children.count();i++){
+    printf("  %i - %s\n", i, children.at(i)->label().toLatin1().data());
+  }
+  
+  QTreeWidgetItem* child = treeItem->takeChild(from);
+  treeItem->insertChild(to, child);
 }

@@ -17,6 +17,7 @@ class rcamObject : public QObject
   public:
     rcamObject(rcamObject *parentObj, QString objType);
     QString type();
+    QString label();
     void addItemToTree(QTreeWidget *parentTree);
     
     QMenu* menu();
@@ -26,6 +27,11 @@ class rcamObject : public QObject
     void writeXML(QIODevice *xml);
     QVariant findSettingValue(QString name);
 
+    QList<editableSetting*> setting;
+    void createSettingsTable();
+    int childIndex(rcamObject *query);
+    void moveChild(int from, int to);
+    
   public slots:
     void executeTree();
     virtual void execute();
@@ -45,10 +51,6 @@ class rcamObject : public QObject
     QAction *executeAction;
     QAction *executeTreeAction;
     QList<QAction*> objectAction;
-    
-    QList<editableSetting*> setting;
-    
-    void createSettingsTable();
     
     void addItemToTree(QTreeWidgetItem *parentTreeItem);
     virtual void createMenu();

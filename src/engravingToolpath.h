@@ -9,7 +9,7 @@ class engravingToolpath : public genericToolpath
     engravingToolpath(machineSettings *settings, const ONX_Model* modelGeom);
   
   private:
-    void calcToolPath(const ON_Curve* curve);
+    void calcToolPath(const ON_Curve* curve, geomReference* geomRef);
     
     void polishTreeLabel();
 };

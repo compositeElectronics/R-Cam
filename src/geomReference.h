@@ -19,5 +19,10 @@ class geomReference : public rcamObject
     
   private:
     void polishTreeLabel();
+    void createMenu();
+
+  private slots:
+    void moveUp();
+    void moveDn();
 };
 #endif

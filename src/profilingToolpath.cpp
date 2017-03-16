@@ -8,11 +8,21 @@ profilingToolpath::profilingToolpath(machineSettings *settings, const ONX_Model*
   createSettingsTable();
 }
 
+void profilingToolpath::addGeometryByLayer(){
+  int i;
+  genericToolpath::addGeometryByLayer();
+  for (i=0;i<children.count();i++){
+    children[i]->setting.append(new editableSetting(QString("stepDown"), QString("Step Down"), QVariant((bool)true), QVariant(), QVariant()));
+    children[i]->createSettingsTable();
+  }
+  
+}
+
 void profilingToolpath::polishTreeLabel(){
   treeItem->setText(0,QString("Profiling Toolpath"));  
 }
 
-void profilingToolpath::calcToolPath(const ON_Curve* curve){
+void profilingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomRef){
   // The profiling path is very similar to the engrave path, except that it plunges to the next Z step until it reaches the curve
   // instead of maintaining constant depth.
   
@@ -20,7 +30,7 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve){
   // In which case you'll just get the curve profile (and likely crash the CNC machine).
   bool takeNextCut;
   double tStart, tEnd;
-  double t, tStep, z, zStep;
+  double t, tStep, tLoop, z, zStep;
   char line[256];
   ON_3dPoint onPt;
   
@@ -29,17 +39,23 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve){
   zStep=findSettingValue("zStep").toDouble();
   
   z=0;
+  if (!geomRef->findSettingValue("stepDown").toBool()) z=-1000;
+  
   takeNextCut=true;
+  
+  onPt=curve->PointAt(tStart);
+
+  sprintf(line,"G0 X%lf Y%lf",onPt.x, onPt.y); path.append(line);
+  sprintf(line,"G0 Z[#<workZ>+#<rapidZ>]\n"); path.append(line);
+    
   while (takeNextCut){
     z+=zStep;
-    onPt=curve->PointAt(tStart);
-    sprintf(line,"G0 Z#<safeZ>\n"); path.append(line);
-    sprintf(line,"G0 X%lf Y%lf",onPt.x, onPt.y); path.append(line);
-    sprintf(line,"G0 Z[#<workZ>+#<rapidZ>]\n"); path.append(line);
     takeNextCut=false;
     printf("Taking cut at Z=%lf\n",z);
     
-    for (t=tStart;t<tEnd+tStep/10.;t+=tStep){
+    for (tLoop=tStart;tLoop<tEnd+tStep/10.;tLoop+=tStep){
+      t=tLoop;
+      if (geomRef->findSettingValue("reverse").toBool()) t=tEnd-tLoop;
 //      printf("t %lf of %lf to %lf\n",t, tStart, tEnd);
       onPt=curve->PointAt(t);
       sprintf(line,"G1 X%lf Y%lf",onPt.x, onPt.y);

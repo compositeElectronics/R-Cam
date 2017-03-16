@@ -19,21 +19,19 @@ class opennurbsDisplayWidget : public QWidget
     void setSelectedObjects(QList<geomReference*> objs);
     void setSelectedObjects(geomReference* objs);
     void clearSelectedObjects();
-    void setShowMarkers(bool show);
     void setAutoCenterAndZoom(bool autoCenter);
     
   private:
     int drawObject;
     QList<geomReference*> selectedObjects;
     bool hasModel;
-    bool showMarkers;
     bool autoCenterAndZoom;
     ONX_Model *model;
     double scale;
     
     void paintEvent(QPaintEvent *event);
     void drawModelObject(QPainter *painter, int objIndex);
-    void drawCurveXY(QPainter *painter, const ON_Object* geom=0);
+    void drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse);
     
     QPen xAxisPen;
     QPen yAxisPen;

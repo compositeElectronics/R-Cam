@@ -23,7 +23,6 @@ opennurbsDisplayWidget::opennurbsDisplayWidget(QWidget *parent) : QWidget(parent
   
   drawObject=-1; // By default draw all objects.
   hasModel=false;
-  showMarkers=false;
   autoCenterAndZoom=false;
   offset=QPointF(0,0);
   setMinimumSize(100, 100);
@@ -53,10 +52,6 @@ void opennurbsDisplayWidget::setSelectedObjects(geomReference* objs){
 void opennurbsDisplayWidget::clearSelectedObjects(){
   selectedObjects.clear();
   update();
-}
-  
-void opennurbsDisplayWidget::setShowMarkers(bool show){
-  showMarkers=show;
 }
 
 void opennurbsDisplayWidget::setAutoCenterAndZoom(bool autoCenter){
@@ -145,6 +140,8 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   const ON_Object* geom=0;
   ON_Color objColor;
   QPen modelPen;
+  bool markers=false;
+  bool reverse=false;
   int i;
   const ONX_Model_Object& mo = model->m_object_table[objIndex];
   
@@ -162,12 +159,15 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
 //  char *mref, *selref;
 //  mref = new char[38];
 //  selref = new char[38];
+  markers=false;
   for (i=0;i<selectedObjects.count();i++){
 //    mref=ON_UuidToString( mo.m_attributes.m_uuid , mref);
 //    selref=ON_UuidToString( selectedObjects[i]->ref , selref);
 //    printf("Checking ModelRef %s against Selected %s\n", mref, selref);
     if (mo.m_attributes.m_uuid==selectedObjects[i]->ref){
       modelPen.setColor(selectColour);
+      markers=true;
+      reverse=selectedObjects[i]->findSettingValue("reverse").toBool();
       break;
     }
   }
@@ -179,15 +179,15 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   geom=mo.m_object;
   switch(geom->ObjectType()){
     case ON::curve_object:
-      drawCurveXY(painter, geom);
+      drawCurveXY(painter, geom, markers, reverse);
 //      printf("Object Index = %i\n", objIndex);
       break;
   }
 }
     
-void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geom){
+void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse){
   double tStart, tEnd;
-  double t, tStep, tRange;
+  double t, tRange;
   ON_3dPoint onPt, nxtPt;
   QPointF pt0, pt;
  
@@ -204,11 +204,16 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
     pt0=pt;
   }
   
-  if (showMarkers){
+  if (markers){
     tRange=tEnd-tStart;
     for (t=tStart;t<=tEnd;t+=tRange/10.){
-      onPt=curve->PointAt(t);
-      nxtPt=curve->PointAt(t+.01);
+      if (reverse){
+        onPt=curve->PointAt(t+.01);
+        nxtPt=curve->PointAt(t);
+      }else{
+        onPt=curve->PointAt(t);
+        nxtPt=curve->PointAt(t+.01);
+      }
       pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
       if (nxtPt.x>onPt.x){
         painter->drawLine(pt.x(),pt.y()-5,pt.x()+5,pt.y());
