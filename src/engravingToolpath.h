@@ -6,7 +6,7 @@
 class engravingToolpath : public genericToolpath
 {
   public:
-    engravingToolpath(machineSettings *settings, const ONX_Model* modelGeom);
+    engravingToolpath(rcamObject *parent);
   
   private:
     void calcToolPath(const ON_Curve* curve, geomReference* geomRef);

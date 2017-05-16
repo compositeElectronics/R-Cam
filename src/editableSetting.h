@@ -17,6 +17,7 @@ class editableSetting : public QObject
 {
   Q_OBJECT
   public:
+    editableSetting(QDomElement element, QObject *parent=0);
     editableSetting(QString settingName, QString settingLabel, QVariant settingData, QVariant min, QVariant max, QObject *parent=0);
 
     QString settingName();
@@ -26,9 +27,11 @@ class editableSetting : public QObject
 
     void setLabelText(QString labelText);
 
-    void readXML(QDomElement root);
-    void writeXML(QIODevice *xml);
+    void readXMLElement(QDomElement element);
+    void writeXML(QIODevice *xml, int xmlLevel=0);
 
+    bool isApplicable(QDomElement xml);
+    
   private slots:
     void updateData();
     
@@ -42,5 +45,7 @@ class editableSetting : public QObject
     QCheckBox *checkBox;
     QSpinBox *intSpinBox;
     QDoubleSpinBox *dblSpinBox;
+
+    void createSetting(QString settingName, QString settingLabel, QVariant settingData, QVariant min, QVariant max);
 };
 #endif

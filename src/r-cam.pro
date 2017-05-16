@@ -12,6 +12,8 @@ HEADERS += mainWindow.h \
            odPoint.h \
            odMatrix.h \
            rcamObject.h \
+           rcamObjectFactory.h \
+           rcamProject.h \
            editableSetting.h \
            geomReference.h \
            genericTool.h \
@@ -29,6 +31,8 @@ SOURCES += main.cpp \
            odPoint.cpp \
            odMatrix.cpp \
            rcamObject.cpp \
+           rcamObjectFactory.cpp \
+           rcamProject.cpp \
            editableSetting.cpp \
            geomReference.cpp \
            genericTool.cpp \

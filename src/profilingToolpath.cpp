@@ -1,11 +1,12 @@
 #include "profilingToolpath.h"
 
-profilingToolpath::profilingToolpath(machineSettings *settings, const ONX_Model* modelGeom=0) : genericToolpath(settings, modelGeom, "profilingToolpath"){
+profilingToolpath::profilingToolpath(rcamObject *parent) : genericToolpath(parent, "profilingToolpath"){
   setting.append(new editableSetting(QString("zStep"), QString("Z Step"),   QVariant((double)-0.5), QVariant(-100), QVariant(-0.0001)));
-  setting.append(new editableSetting(QString("step"), QString("Span Step"), QVariant((double)0.1), QVariant((double)0.001), QVariant((double)1)));
+  setting.append(new editableSetting(QString("ramp"),  QString("Ramp"),   QVariant((bool)false), QVariant(), QVariant()));
   cutDepth=-13.0;
   nCuts=4;
   createSettingsTable();
+  createMenu();
 }
 
 void profilingToolpath::addGeometryByLayer(){
@@ -29,40 +30,58 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
   // If you're feeling brave set the zStep to be greater magnitude than the curve z (i.e. a curve at -1mm could have a step of -5mm)
   // In which case you'll just get the curve profile (and likely crash the CNC machine).
   bool takeNextCut;
-  double tStart, tEnd;
-  double t, tStep, tLoop, z, zStep;
+  double tStart, tEnd, tRange;
+  double t, tStep, tLoop, z, zStep, zi;
   char line[256];
   ON_3dPoint onPt;
+  bool reversed, ramp, stepDown;
   
   curve->GetDomain(&tStart, &tEnd);
-  tStep=findSettingValue("step").toDouble();
-  zStep=findSettingValue("zStep").toDouble();
+  tRange=tEnd-tStart;
   
+  zStep=findSettingValue("zStep").toDouble();
+  ramp=findSettingValue("ramp").toBool();  
+  tStep=geomRef->findSettingValue("step").toDouble();
+  reversed=geomRef->findSettingValue("reverse").toBool();
+  stepDown=geomRef->findSettingValue("stepDown").toBool();
   z=0;
-  if (!geomRef->findSettingValue("stepDown").toBool()) z=-1000;
+  if (!stepDown) z=-1000;
   
   takeNextCut=true;
+  if (!reversed){
+    onPt=curve->PointAt(tStart);
+  }else{
+    onPt=curve->PointAt(tEnd);
+  }
   
-  onPt=curve->PointAt(tStart);
-
   sprintf(line,"G0 X%lf Y%lf",onPt.x, onPt.y); path.append(line);
   sprintf(line,"G0 Z[#<workZ>+#<rapidZ>]\n"); path.append(line);
-    
+  
+  if (ramp && stepDown) z=-zStep; // tweak so that ramping will start at z=0.
+  
   while (takeNextCut){
     z+=zStep;
     takeNextCut=false;
     printf("Taking cut at Z=%lf\n",z);
     
-    for (tLoop=tStart;tLoop<tEnd+tStep/10.;tLoop+=tStep){
-      t=tLoop;
-      if (geomRef->findSettingValue("reverse").toBool()) t=tEnd-tLoop;
+    for (tLoop=0;tLoop<tRange+tStep/10.;tLoop+=tStep){
+      if (!reversed){
+        t=tStart+tLoop;      
+      }else{
+        t=tEnd-tLoop;
+      }
+      if (ramp && stepDown){
+        zi=z+tLoop/tRange*zStep;
+      }else{
+        zi=z;
+      }
 //      printf("t %lf of %lf to %lf\n",t, tStart, tEnd);
       onPt=curve->PointAt(t);
       sprintf(line,"G1 X%lf Y%lf",onPt.x, onPt.y);
-      if (onPt.z>z){
+      if (onPt.z>zi){
         sprintf(line,"%s Z[#<workZ>+%lf]", line, onPt.z);
       }else{
-        sprintf(line,"%s Z[#<workZ>+%lf]", line, z);
+        sprintf(line,"%s Z[#<workZ>+%lf]", line, zi);
         takeNextCut=true;
 //        printf("Must take next cut\n");
       }

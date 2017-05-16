@@ -6,7 +6,7 @@
 class profilingToolpath : public genericToolpath
 {
   public:
-    profilingToolpath(machineSettings *settings, const ONX_Model* modelGeom);
+    profilingToolpath(rcamObject *parent);
   
   private:
     void calcToolPath(const ON_Curve* curve, geomReference* geomRef);

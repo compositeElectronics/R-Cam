@@ -16,7 +16,9 @@
   #include "machineSettings.h"
   #include "projectTreeDock.h"
   #include "settingsDock.h"
-  
+
+  #include "rcamProject.h"
+    
 class mainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -25,32 +27,16 @@ class mainWindow : public QMainWindow
 
   private:
     QMenu *fileMenu;
-    QAction *openGeometryAction;
-    QAction *saveGCodeAction;
-    
-    QMenu *operationsMenu;
-    QAction *createEngravePathAction;
-    QAction *createProfilingPathAction;
-    QAction *calculateToolPathAction;
-  
-    machineSettings *machine;
-    ONX_Model model;
-    
-    QList<genericToolpath*> toolPath;
+    QAction *openProjectAction;
+    QAction *saveProjectAction;
+
+    rcamProject *project;
     
     projectTreeDock *projectTree;
     settingsDock *objectSettings;
     opennurbsDisplayWidget *geomDisplay;
   
   private slots:
-    void openGeometry(QString fileName=QString());
-    void saveGCode(QString fileName=QString());
-
-    void engraveObject();
-    void profileObject();
-
-    void calculateToolpaths();
-    
     void treeWidgetContextMenu(QPoint pt);
     void treeItemActivated(QTreeWidgetItem *item, int column);
 };

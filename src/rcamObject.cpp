@@ -1,6 +1,8 @@
 #include "rcamObject.h"
 #include <stdio.h>
 
+#include "rcamObjectFactory.h"
+
 rcamObject::rcamObject(rcamObject* parent, QString processType) : QObject(){
   p_parent=parent;
   p_type=processType;
@@ -52,6 +54,7 @@ QWidget* rcamObject::settingsTable(){
 
 void rcamObject::createSettingsTable(){
   int i;
+//  if (p_settingsTable) delete p_settingsTable;
   p_settingsTable = new  QTableWidget(setting.count(),2);
   
   for (i=0;i<setting.count();i++){
@@ -91,7 +94,11 @@ void rcamObject::writeXML(QIODevice *xml){
 
   spaceXML(xml,false); sprintf(line,"<%s>\n",p_type.toLatin1().data()); xml->write(line);
   
-  writeSettingsXML(xml);
+  for (i=0;i<setting.count();i++){
+    setting.at(i)->writeXML(xml,hlevel+2);
+  }
+  
+  writeCustomXML(xml);
   
   for (i=0;i<children.count();i++){
     children.at(i)->writeXML(xml);
@@ -100,7 +107,7 @@ void rcamObject::writeXML(QIODevice *xml){
   spaceXML(xml,false); sprintf(line,"</%s>\n",p_type.toLatin1().data()); xml->write(line);
 }
 
-void rcamObject::writeSettingsXML(QIODevice *xml){
+void rcamObject::writeCustomXML(QIODevice *xml){
 }
 
 void rcamObject::spaceXML(QIODevice *xml, bool inside){
@@ -113,16 +120,41 @@ void rcamObject::spaceXML(QIODevice *xml, bool inside){
 }
 
 void rcamObject::readXML(QDomElement root){
+  bool found;
+  int i;
   QDomElement element = root.firstChildElement();
-//  printf("root tag = %s\n",root.tagName().toLatin1().data());
+  rcamObjectFactory factory;
+  rcamObject *tmpObject;
+  
+  printf("root tag = %s\n",root.tagName().toLatin1().data());
   while (!element.isNull()) {
-//    printf("element tag = %s\n",element.tagName().toLatin1().data());
+    printf("Element tag = %s\n",element.tagName().toLatin1().data());
+    if (element.tagName().toLower()=="setting"){
+      printf("Setting Name = %s\n", element.attribute("name").toLatin1().data());
+      for (i=0;i<setting.count();i++){
+        setting.at(i)->readXMLElement(element);
+      }
+      printf("Checking for non-default setting...\n");
+      // check for non-default setting... (some toolpaths extend the available settings.
+      found=false;
+      for (i=0;i<setting.count();i++){
+        if (setting.at(i)->isApplicable(element)) found=true;
+      }
+      if (found==false){
+        printf("Adding new setting to list\n");
+        setting.append(new editableSetting(element));
+      }
+    }
+    tmpObject=factory.createObject(element,this);
+
     readXMLElement(element);
     element = element.nextSiblingElement();
   }
+  createSettingsTable();
 }
 
 void rcamObject::readXMLElement(QDomElement element){
+
 }
 
 QVariant rcamObject::findSettingValue(QString name){

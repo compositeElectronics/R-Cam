@@ -55,7 +55,7 @@ class rcamObject : public QObject
     void addItemToTree(QTreeWidgetItem *parentTreeItem);
     virtual void createMenu();
     void spaceXML(QIODevice *xml, bool inside=true);
-    virtual void writeSettingsXML(QIODevice *xml);
+    virtual void writeCustomXML(QIODevice *xml);
     virtual void readXMLElement(QDomElement element);
     virtual void polishTreeLabel();
 };

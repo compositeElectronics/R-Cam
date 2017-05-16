@@ -12,7 +12,7 @@ class machineSettings : public rcamObject
 {
   Q_OBJECT
   public:
-    machineSettings();
+    machineSettings(rcamObject *parent=0);
 
     double xSize();
     double ySize();

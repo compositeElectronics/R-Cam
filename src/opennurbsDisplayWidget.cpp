@@ -65,19 +65,19 @@ void opennurbsDisplayWidget::centreAndZoom(){
   if (!hasModel) return;
   if (model->m_object_table.Count()==0) return;
   
-  printf("Interrogating bounding box\n");
+//  printf("Interrogating bounding box\n");
   ON_BoundingBox bounds=model->BoundingBox();
-  printf("Complete\n");
+//  printf("Complete\n");
   xScale=(double)width()/bounds.Diagonal().x;
   yScale=(double)height()/bounds.Diagonal().y;
   
   scale=xScale;
   if (yScale<xScale) scale=yScale;
-  scale*=0.98;
+  scale*=0.95;
   midWindow=QPointF(width()/2, height()/2);
   midModel=QPointF((bounds.Min().x+bounds.Max().x)/2., -(bounds.Min().y+bounds.Max().y)/2.);
   offset=midWindow-midModel*scale;
-  
+/*  
   printf("Model Bounds\n");
   printf("  X = %lf\t%lf\n",bounds.Min().x, bounds.Max().x);
   printf("  Y = %lf\t%lf\n",bounds.Min().y, bounds.Max().y);
@@ -88,6 +88,7 @@ void opennurbsDisplayWidget::centreAndZoom(){
   printf("  Z = %lf\n",(bounds.Min().z+bounds.Max().z)/2.);
   
   printf("Offset = %lf        %lf\n",offset.x(), offset.y());
+  */
 }
 
 void opennurbsDisplayWidget::paintEvent(QPaintEvent *event){
@@ -140,6 +141,7 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   const ON_Object* geom=0;
   ON_Color objColor;
   QPen modelPen;
+  double step=0.1;
   bool markers=false;
   bool reverse=false;
   int i;
@@ -168,6 +170,7 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
       modelPen.setColor(selectColour);
       markers=true;
       reverse=selectedObjects[i]->findSettingValue("reverse").toBool();
+      step=selectedObjects[i]->findSettingValue("step").toDouble();
       break;
     }
   }
@@ -179,13 +182,13 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   geom=mo.m_object;
   switch(geom->ObjectType()){
     case ON::curve_object:
-      drawCurveXY(painter, geom, markers, reverse);
+      drawCurveXY(painter, geom, markers, reverse, step);
 //      printf("Object Index = %i\n", objIndex);
       break;
   }
 }
     
-void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse){
+void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse, double step){
   double tStart, tEnd;
   double t, tRange;
   ON_3dPoint onPt, nxtPt;
@@ -197,7 +200,7 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
   
   curve->GetDomain(&tStart, &tEnd);
  
-  for (t=tStart;t<=tEnd+.001;t+=0.1){
+  for (t=tStart;t<=tEnd+.001;t+=step){
     onPt=curve->PointAt(t);
     pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
     if (t>tStart+.001) painter->drawLine(pt,pt0);

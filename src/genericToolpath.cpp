@@ -3,10 +3,14 @@
 
 #include <QInputDialog>
 
-genericToolpath::genericToolpath(machineSettings *settings, const ONX_Model* modelGeom=0, QString type="toolpath") : rcamObject(0, type)
+genericToolpath::genericToolpath(rcamObject *parent, QString type="toolpath") : rcamObject(parent, type)
 {
-  machine=settings;
-  geom=modelGeom;
+  rcamProject *proj=dynamic_cast<rcamProject*>(parent);
+  
+  if (proj){
+    machine=proj->machine;
+    geom=&proj->model;
+  }
 //  setting.append(new editableSetting(QString("tool"),  QString("Tool"),  QVariant((int)1), QVariant(0), QVariant(99999)));
   setting.append(new editableSetting(QString("feedRate"), QString("Feed Rate"), QVariant((double)700), QVariant(0), QVariant(machine->maxFeed())));
   setting.append(new editableSetting(QString("toolRPM"),  QString("Tool RPM"),  QVariant((double)100), QVariant(0), QVariant(machine->maxCutterRPM())));
@@ -109,13 +113,36 @@ void genericToolpath::calcToolPath(const ON_Curve *curve, geomReference* geomRef
 void genericToolpath::writePath(QIODevice *io){
   int i;
   if (path.count()==0) return;
+
+  io->write("G0 Z[#<safeZ>]\n");
   for (i=0;i<path.count();i++){
     io->write(path[i].toLatin1());
     io->write("\n");
   }
+  io->write("G0 Z[#<safeZ>]\n");
 }
 
 void genericToolpath::orderGeoms(){
   
 }
   
+QList<geomReference*> genericToolpath::geometries(){
+  int i;
+  QList<geomReference*> ref;
+  geomReference *geoRef;
+  
+  for (i=0;i<children.count();i++){
+    geoRef = dynamic_cast<geomReference*>(children[i]);
+    if (geoRef) ref.append(geoRef);
+  }
+  printf("%i geometry references\n",ref.count());
+  return ref;
+}
+
+void genericToolpath::readXMLElement(QDomElement element){
+  if (element.tagName().toLower()=="label") treeItem->setText(0,QString(element.text()));
+}
+
+void genericToolpath::writeCustomXML(QIODevice *xml){
+  spaceXML(xml,true); xml->write(QString("<label>"+treeItem->text(0)+"</label>\n").toLatin1());
+}

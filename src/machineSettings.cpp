@@ -1,6 +1,6 @@
 #include "machineSettings.h"
 
-machineSettings::machineSettings() : rcamObject(0,"machineSettings") {
+machineSettings::machineSettings(rcamObject *parent) : rcamObject(parent,"machineSettings") {
   // Some default small machine settings...
   
   setting.append(new editableSetting(QString("xSize"),     QString("X Size"), QVariant((double)580), QVariant(0), QVariant(1000)));

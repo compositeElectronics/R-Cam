@@ -14,13 +14,17 @@ class geomReference : public rcamObject
   Q_OBJECT
   public:
     geomReference(ON_UUID uuid, rcamObject* parent=0);
+    geomReference(rcamObject* parent=0);
     
     ON_UUID ref;
     
   private:
+    void finishConstruction();
     void polishTreeLabel();
     void createMenu();
-
+    void writeCustomXML(QIODevice *xml);
+    void readXMLElement(QDomElement element);
+  
   private slots:
     void moveUp();
     void moveDn();
