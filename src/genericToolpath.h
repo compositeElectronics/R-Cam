@@ -21,7 +21,7 @@ class genericToolpath : public rcamObject
     const ONX_Model* geom;
     
     void calculateToolPath();
-    void writePath(QIODevice *io);
+    void writeToolPath(QIODevice *io);
     QList<geomReference*> geometries();
     
   protected:
@@ -29,6 +29,7 @@ class genericToolpath : public rcamObject
     
     void createMenu();
     virtual void calcToolPath(const ON_Curve *curve, geomReference* geomRef);
+    virtual void calcToolPath(const ON_Surface* srf, geomReference* geomRef);
     virtual void readXMLElement(QDomElement element);
     virtual void writeCustomXML(QIODevice *xml);
     

@@ -64,6 +64,25 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
     takeNextCut=false;
     printf("Taking cut at Z=%lf\n",z);
     
+    if (!curve->IsClosed()){
+      tLoop=0;
+      if (!reversed){
+        t=tStart;
+      }else{
+        t=tEnd;
+      }
+      onPt=curve->PointAt(t);
+      sprintf(line,"G0 X%lf Y%lf",onPt.x, onPt.y);
+      path.append(line);
+      
+      if (onPt.z>z){
+        sprintf(line,"G0 Z[#<workZ>+%lf]", line, onPt.z);
+      }else{
+        sprintf(line,"G0 Z[#<workZ>+%lf]", line, zi);
+      }
+      path.append(line);
+    }
+    
     for (tLoop=0;tLoop<tRange+tStep/10.;tLoop+=tStep){
       if (!reversed){
         t=tStart+tLoop;      
@@ -87,5 +106,6 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
       }
       path.append(line);
     }
+    if (!curve->IsClosed()){ sprintf(line,"G0 Z[#<workZ>+#<rapidZ>]\n"); path.append(line); }
   }
 }

@@ -196,3 +196,6 @@ void rcamObject::moveChild(int from, int to){
   QTreeWidgetItem* child = treeItem->takeChild(from);
   treeItem->insertChild(to, child);
 }
+
+void rcamObject::writeToolPath(QIODevice *io){
+}

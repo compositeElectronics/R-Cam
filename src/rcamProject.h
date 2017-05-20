@@ -28,6 +28,7 @@ class rcamProject : public rcamObject
   
     void engraveObject();
     void profileObject();
+    void surfaceObject();
     
     void calculateToolpaths();
     

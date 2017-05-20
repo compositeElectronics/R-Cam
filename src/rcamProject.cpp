@@ -2,6 +2,7 @@
 #include "genericToolpath.h"
 #include "engravingToolpath.h"
 #include "profilingToolpath.h"
+#include "surfacingToolpath.h"
 #include "geomReference.h"
 #include "opennurbs_20130711/opennurbs.h"
 #include <QFileDialog>
@@ -41,13 +42,17 @@ void rcamProject::createMenu(){
   objectAction.append(treeItemMenu->addAction("Create Profiling Tool Path"));
   connect(objectAction.last(), SIGNAL(triggered()), this, SLOT(profileObject()));
   
+  objectAction.append(treeItemMenu->addAction("Create Surfacing Tool Path"));
+  connect(objectAction.last(), SIGNAL(triggered()), this, SLOT(surfaceObject()));
+  
   objectAction.append(treeItemMenu->addAction("Calculate Tool Path"));
   connect(objectAction.last(), SIGNAL(triggered()), this, SLOT(calculateToolpaths()));
 }
 
 void rcamProject::readGeometryFile(QString fileName){
   bool bModelRead = false;
-
+  int objIndex;
+  
   if (fileName.isEmpty()){
     fileName = QFileDialog::getOpenFileName(0, "Open Geometry", "", "Rhino Geometry Files (*.3dm)");
     if (fileName.isEmpty()) return;
@@ -60,11 +65,51 @@ void rcamProject::readGeometryFile(QString fileName){
   if (fp!=0){
     ON_BinaryFile archive( ON::read3dm, fp );
     if (model.Read( archive, &error_log)){
-     fprintf(stderr,"Geometry read");
+     fprintf(stderr,"Geometry read\n");
      geometryFilename=fileName;
     }
     ON::CloseFile( fp );
   }
+  
+  int pt, ptset, crv, srf, brep, mesh, extrusion;
+  
+  pt=0; ptset=0; crv=0; srf=0; brep=0; mesh=0; extrusion=0;
+
+  for (objIndex=0;objIndex<model.m_object_table.Count();objIndex++){
+    const ONX_Model_Object &mo = model.m_object_table[objIndex];
+        
+    switch( mo.m_object->ObjectType() ){
+      case ON::point_object:
+        pt++;
+        break;
+      case ON::pointset_object:
+        ptset++;
+        break;
+      case ON::curve_object:
+        crv++;
+        break;
+      case ON::surface_object:
+        srf++;
+        break;
+      case ON::brep_object:
+        brep++;
+        break;
+      case ON::extrusion_object:
+        extrusion++;
+        break;
+      case ON::mesh_object:
+        mesh++;
+        break;
+    };
+  }
+  
+  printf("Rhino model contains:\n");
+  printf("      Point: %i\n",pt);
+  printf("  Point set: %i\n",ptset);
+  printf("      Curve: %i\n",crv);
+  printf("    Surface: %i\n",srf);
+  printf("      B-Rep: %i\n",brep);
+  printf("       Mesh: %i\n",mesh);
 }
 
 void rcamProject::saveGCode(QString fileName){
@@ -98,8 +143,8 @@ void rcamProject::saveGCode(QString fileName){
   file.write("G80 (cancel canned cycle motion mode)\n");
   file.write("\n");
   
-//  for (i=0;i<children.count();i++) toolPath[i]->writePath(&file);
-
+  for (i=0;i<children.count();i++) children[i]->writeToolPath(&file);
+  
   file.write("M2\n");
 }
 
@@ -165,6 +210,12 @@ void rcamProject::engraveObject(){
 void rcamProject::profileObject(){
   genericToolpath* toolPath;
   toolPath = new profilingToolpath(this);
+//  toolPath->createMenu();
+}
+
+void rcamProject::surfaceObject(){
+  genericToolpath* toolPath;
+  toolPath = new surfacingToolpath(this);
 //  toolPath->createMenu();
 }
 

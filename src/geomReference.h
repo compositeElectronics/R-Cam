@@ -13,10 +13,11 @@ class geomReference : public rcamObject
 {
   Q_OBJECT
   public:
-    geomReference(ON_UUID uuid, rcamObject* parent=0);
+    geomReference(ON_UUID uuid, ON::object_type objType, rcamObject* parent=0);
     geomReference(rcamObject* parent=0);
     
     ON_UUID ref;
+    ON::object_type type;
     
   private:
     void finishConstruction();

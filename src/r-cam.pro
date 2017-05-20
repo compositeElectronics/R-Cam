@@ -21,6 +21,7 @@ HEADERS += mainWindow.h \
            genericToolpath.h \
            engravingToolpath.h \
            profilingToolpath.h \
+           surfacingToolpath.h \
            machineSettings.h \
            opennurbsDisplayWidget.h \
            projectTreeDock.h \
@@ -40,6 +41,7 @@ SOURCES += main.cpp \
            genericToolpath.cpp \
            engravingToolpath.cpp \
            profilingToolpath.cpp \
+           surfacingToolpath.cpp \
            machineSettings.cpp \
            opennurbsDisplayWidget.cpp \
            projectTreeDock.cpp \

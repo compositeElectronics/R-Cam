@@ -58,7 +58,7 @@ void genericToolpath::addGeometryByLayer(){
   for (objIndex=0;objIndex<geom->m_object_table.Count();objIndex++){
     const ONX_Model_Object &mo = geom->m_object_table[objIndex];
     if (mo.m_attributes.m_layer_index==layId){
-      new geomReference(mo.m_attributes.m_uuid, this);
+      new geomReference(mo.m_attributes.m_uuid, mo.m_object->ObjectType(), this);
       printf("Child order is currently:\n");
       for (i=0;i<children.count();i++){
         printf("  %i - %s\n", i, children.at(i)->label().toLatin1().data());
@@ -70,7 +70,9 @@ void genericToolpath::addGeometryByLayer(){
 void genericToolpath::calculateToolPath(){
   int i;
   int objIndex;
+  int nSrfs;
   const ON_Curve* curve=0;
+  const ON_Brep *brep=0;
   bool match=false;
   char line[256];
   geomReference *geometry;
@@ -97,8 +99,17 @@ void genericToolpath::calculateToolPath(){
           case ON::curve_object:
             curve = ON_Curve::Cast(mo.m_object);
             path.append("G0 Z[#<workZ>+#<rapidZ>]");
-            if (curve) calcToolPath(curve, geometry);
+            calcToolPath(curve, geometry);
             path.append("G0 Z[#<workZ>+#<rapidZ>]");
+            break;
+          case ON::brep_object:
+            brep=ON_Brep::Cast(mo.m_object);
+            nSrfs=brep->m_S.Count();
+            for (i=0;i<nSrfs;i++){
+              path.append("G0 Z[#<workZ>+#<rapidZ>]");
+              calcToolPath(brep->m_S[i], geometry);
+              path.append("G0 Z[#<workZ>+#<rapidZ>]");
+            }
             break;
         }
       }
@@ -110,7 +121,10 @@ void genericToolpath::calculateToolPath(){
 void genericToolpath::calcToolPath(const ON_Curve *curve, geomReference* geomRef){
 }
 
-void genericToolpath::writePath(QIODevice *io){
+void genericToolpath::calcToolPath(const ON_Surface* srf, geomReference* geomRef){
+}
+
+void genericToolpath::writeToolPath(QIODevice *io){
   int i;
   if (path.count()==0) return;
 

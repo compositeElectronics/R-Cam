@@ -1,7 +1,8 @@
 #include "geomReference.h"
 
-geomReference::geomReference(ON_UUID uuid, rcamObject *parent) : rcamObject(parent,"geometry") {
+geomReference::geomReference(ON_UUID uuid, ON::object_type objType, rcamObject *parent) : rcamObject(parent,"geometry") {
   ref=uuid;
+  type=objType;
   finishConstruction();
 }
 
@@ -14,8 +15,17 @@ void geomReference::finishConstruction(){
   
   setting.append(new editableSetting(QString("reverse"),   QString("Reverse Geometry"), QVariant((bool)false), QVariant(), QVariant()));
   setting.append(new editableSetting(QString("enabled"),   QString("Enabled"),          QVariant((bool)true), QVariant(), QVariant()));
-  setting.append(new editableSetting(QString("step"),      QString("Span Step"),        QVariant((double)0.1), QVariant((double)0.001), QVariant((double)1)));
-    
+  
+  switch(type){
+    case ON::curve_object:
+      setting.append(new editableSetting(QString("step"),      QString("Span Step"),        QVariant((double)0.1), QVariant((double)0.001), QVariant((double)1)));
+      break;
+    case ON::brep_object:
+      setting.append(new editableSetting(QString("stepU"),      QString("Span Step U"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
+      setting.append(new editableSetting(QString("stepV"),      QString("Span Step V"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
+      break;
+  }  
+  
   createSettingsTable();
   createMenu();
 }

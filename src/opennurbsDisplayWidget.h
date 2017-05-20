@@ -32,6 +32,7 @@ class opennurbsDisplayWidget : public QWidget
     void paintEvent(QPaintEvent *event);
     void drawModelObject(QPainter *painter, int objIndex);
     void drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse, double step);
+    void drawBrepXY(QPainter *painter, const ON_Object* geom, double ustep, double vstep);
     
     QPen xAxisPen;
     QPen yAxisPen;

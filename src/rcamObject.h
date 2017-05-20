@@ -31,7 +31,8 @@ class rcamObject : public QObject
     void createSettingsTable();
     int childIndex(rcamObject *query);
     void moveChild(int from, int to);
-    
+    virtual void writeToolPath(QIODevice *io);
+        
   public slots:
     void executeTree();
     virtual void execute();

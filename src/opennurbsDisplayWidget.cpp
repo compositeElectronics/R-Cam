@@ -141,7 +141,9 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   const ON_Object* geom=0;
   ON_Color objColor;
   QPen modelPen;
-  double step=0.1;
+  double step=-1, ustep=-1, vstep=-1;
+  QVariant setting;
+  
   bool markers=false;
   bool reverse=false;
   int i;
@@ -171,6 +173,9 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
       markers=true;
       reverse=selectedObjects[i]->findSettingValue("reverse").toBool();
       step=selectedObjects[i]->findSettingValue("step").toDouble();
+   
+      setting=selectedObjects[i]->findSettingValue("stepU"); if (setting!=QVariant()) ustep=setting.toDouble();
+      setting=selectedObjects[i]->findSettingValue("stepV"); if (setting!=QVariant()) vstep=setting.toDouble();
       break;
     }
   }
@@ -183,7 +188,9 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
   switch(geom->ObjectType()){
     case ON::curve_object:
       drawCurveXY(painter, geom, markers, reverse, step);
-//      printf("Object Index = %i\n", objIndex);
+      break;
+    case ON::brep_object:
+      drawBrepXY(painter, geom, ustep, vstep);
       break;
   }
 }
@@ -200,6 +207,8 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
   
   curve->GetDomain(&tStart, &tEnd);
  
+  if (step<1e-9) step=0.1;
+  
   for (t=tStart;t<=tEnd+.001;t+=step){
     onPt=curve->PointAt(t);
     pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
@@ -229,5 +238,52 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
       
 //      printf("Model Marker at %lf\t%lf\n",onPt.x, onPt.y);
     }
+  }
+}
+
+void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom, double ustep, double vstep){
+  int nSrfs, i;
+  double u, v, umin, umax, vmin, vmax;
+  const ON_Brep *brep=ON_Brep::Cast(geom);
+  ON_Surface *srf;
+  ON_3dPoint onPt;
+  QPointF pt0, pt;
+  
+  if (!brep) return;
+  nSrfs=brep->m_S.Count();
+//  printf("Object is a BREP with %i surfaces\n", nSrfs);
+  
+  for (i=0;i<nSrfs;i++){
+    srf=brep->m_S[i];
+//    printf("Surface %i...\n",i);
+    srf->GetDomain(0, &umin, &umax);
+    srf->GetDomain(1, &vmin, &vmax);
+//    printf("Umin/Umax = %lf / %lf\n",umin,umax);
+//    printf("Vmin/Vmax = %lf / %lf\n",vmin,vmax);
+    
+    if (ustep<1e-9) ustep=(umax-umin)/4.;
+    if (vstep<1e-9) vstep=(vmax-vmin)/4.;
+
+    for (u=umin; u<=umax+.001; u+=ustep){
+      onPt=srf->PointAt(u,vmin);
+      pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+      for (v=vmin; v<=vmax+.001; v+=vstep){
+        onPt=srf->PointAt(u,v);
+        pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+        painter->drawLine(pt0,pt);
+        pt0=pt;
+      }
+    }
+    
+    for (v=vmin; v<=vmax+.001; v+=vstep){
+      onPt=srf->PointAt(umin,v);
+      pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+      for (u=umin; u<=umax+.001; u+=ustep){
+        onPt=srf->PointAt(u,v);
+        pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+        painter->drawLine(pt0,pt);
+        pt0=pt;
+      }
+    }    
   }
 }
