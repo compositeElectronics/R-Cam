@@ -1,0 +1,28 @@
+\documentclass[11pt,twoside,a4paper]{report}
+
+% Custom commands
+\newcommand{\userTitle}{R-Cam}   % The document title/product name etc.
+\newcommand{\userDocType}{User Manual}                                         % What type of document this is
+\newcommand{\userClient}{Open Source Software - GPLv3}                         % No Client for a Tech note
+\newcommand{\userDate}{Sept 2017}                                              % The Date (current version)
+\newcommand{\userAuthor}{Tim Brocklehurst}                                     % The Author(s)
+\newcommand{\userWeb}{http://www.compositeElectronics.com}                     % Company web site address - should not need changing
+\newcommand{\userSubject}{CAM}                                                 % A suitable subject word
+\newcommand{\userKeywords}{LinuxCNC; CAM; Machining}                           % Put some suitable keywords here
+
+\newcommand{\templatePath}{template}
+\include{\templatePath/documentSetup}
+
+\begin{document}
+\hypersetup{pageanchor=false,
+             bookmarksnumbered=true,
+             pdfencoding=unicode
+            }
+\input{\templatePath/cover}
+
+\input{introduction}
+\input{zCompensation}
+
+\bibliographystyle{plain}
+\bibliography{\templatePath/library.bib}
+\end{document}
