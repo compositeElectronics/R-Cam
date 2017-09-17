@@ -12,5 +12,6 @@ class engravingToolpath : public genericToolpath
     void calcToolPath(const ON_Curve* curve, geomReference* geomRef);
     
     void polishTreeLabel();
+    double zCorrect(double x, double y);
 };
 #endif

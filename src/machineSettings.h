@@ -7,6 +7,7 @@
   #include <QAction>
   #include <QDoubleSpinBox>
   #include "rcamObject.h"
+  #include "surfaceCorrection.h"
   
 class machineSettings : public rcamObject
 {
@@ -23,6 +24,8 @@ class machineSettings : public rcamObject
     
     double maxFeed();
     double maxCutterRPM();
+
+    surfaceCorrection *surfaceData;
     
   private:
     QList<QTreeWidgetItem*> settingsTreeItem;

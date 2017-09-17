@@ -4,6 +4,7 @@ engravingToolpath::engravingToolpath(rcamObject *parent) : genericToolpath(paren
   setting.append(new editableSetting(QString("depth"), QString("Depth"),     QVariant((double)-0.1), QVariant((double)-75), QVariant((double)75)));
   setting.append(new editableSetting(QString("zStep"), QString("Z Step"),   QVariant((double)-0.5), QVariant(-1.), QVariant(-0.0001)));
   setting.append(new editableSetting(QString("step"), QString("Span Step"),     QVariant((double)0.1), QVariant((double)0.001), QVariant((double)0.25)));
+  setting.append(new editableSetting(QString("zCorrect"), QString("Z Correction"),   QVariant(false), QVariant(false), QVariant(true)));
   createSettingsTable();
   createMenu();
 }
@@ -29,8 +30,8 @@ void engravingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
   
   zDepth=findSettingValue("depth").toDouble();
   zStep=findSettingValue("zStep").toDouble();
+  z=findSettingValue("startZ").toDouble();
   
-  z=0;
   takeNextCut=true;
   while (takeNextCut){
     z+=zStep;
@@ -49,7 +50,7 @@ void engravingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
     }
     sprintf(line,"G0 X%lf Y%lf",onPt.x, onPt.y); path.append(line);
     sprintf(line,"G0 Z[#<workZ>+#<rapidZ>]\n"); path.append(line);
-    sprintf(line,"G1 Z[#<workZ>+%lf]",z); path.append(line);
+    sprintf(line,"G1 Z[#<workZ>+%lf]",z+zCorrect(onPt.x, onPt.y)); path.append(line);
   
     for (tLoop=0;tLoop<tRange+tStep/10.;tLoop+=tStep){
       if (!reversed){
@@ -58,8 +59,16 @@ void engravingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
         t=tEnd-tLoop;
       }
       onPt=curve->PointAt(t);
-      sprintf(line,"G1 X%lf Y%lf",onPt.x, onPt.y);
+      sprintf(line,"G1 X%lf Y%lf Z[#<workZ>+%lf]",onPt.x, onPt.y, z+zCorrect(onPt.x, onPt.y));
       path.append(line);
     }
+  }
+}
+
+double engravingToolpath::zCorrect(double x, double y){
+  if (findSettingValue("zCorrect").toBool()){
+    return machine->surfaceData->correctZ( x, y);
+  }else{
+    return 0;
   }
 }
