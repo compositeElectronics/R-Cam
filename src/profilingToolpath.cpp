@@ -44,7 +44,7 @@ void profilingToolpath::calcToolPath(const ON_Curve* curve, geomReference* geomR
   tStep=geomRef->findSettingValue("step").toDouble();
   reversed=geomRef->findSettingValue("reverse").toBool();
   stepDown=geomRef->findSettingValue("stepDown").toBool();
-  z=0;
+  z=findSettingValue("startZ").toDouble();
   if (!stepDown) z=-1000;
   
   takeNextCut=true;

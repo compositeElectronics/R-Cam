@@ -25,7 +25,8 @@ HEADERS += mainWindow.h \
            machineSettings.h \
            opennurbsDisplayWidget.h \
            projectTreeDock.h \
-           settingsDock.h
+           settingsDock.h \
+           surfaceCorrection.h
 
 SOURCES += main.cpp \
            mainWindow.cpp \
@@ -45,7 +46,8 @@ SOURCES += main.cpp \
            machineSettings.cpp \
            opennurbsDisplayWidget.cpp \
            projectTreeDock.cpp \
-           settingsDock.cpp
+           settingsDock.cpp \
+           surfaceCorrection.cpp
            
 LIBS += opennurbs_20130711/libopenNURBS.a
 

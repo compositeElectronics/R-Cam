@@ -190,6 +190,9 @@ void opennurbsDisplayWidget::drawModelObject(QPainter *painter, int objIndex){
       drawCurveXY(painter, geom, markers, reverse, step);
       break;
     case ON::brep_object:
+      modelPen.setWidth(0);
+      modelPen.setStyle(Qt::SolidLine);
+      painter->setPen(modelPen);
       drawBrepXY(painter, geom, ustep, vstep);
       break;
   }
@@ -242,6 +245,7 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
 }
 
 void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom, double ustep, double vstep){
+  bool stepU, stepV;
   int nSrfs, i;
   double u, v, umin, umax, vmin, vmax;
   const ON_Brep *brep=ON_Brep::Cast(geom);
@@ -264,26 +268,46 @@ void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom
     if (ustep<1e-9) ustep=(umax-umin)/4.;
     if (vstep<1e-9) vstep=(vmax-vmin)/4.;
 
-    for (u=umin; u<=umax+.001; u+=ustep){
+    u=umin;
+    stepU=true;
+    while (stepU){
+      if (u>umax){ u=umax; stepU=false; }
+      
       onPt=srf->PointAt(u,vmin);
       pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
-      for (v=vmin; v<=vmax+.001; v+=vstep){
+      stepV=true;
+      v=vmin;
+      while (stepV){
+        if (v>vmax){ v=vmax; stepV=false; }
         onPt=srf->PointAt(u,v);
         pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
         painter->drawLine(pt0,pt);
         pt0=pt;
+        v+=vstep/4;
       }
+      u+=ustep;
     }
-    
-    for (v=vmin; v<=vmax+.001; v+=vstep){
+
+    v=vmin;
+    stepV=true;
+    while (stepV){
+      if (v>vmax){ v=vmax; stepV=false; }
+        
       onPt=srf->PointAt(umin,v);
       pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
-      for (u=umin; u<=umax+.001; u+=ustep){
+      
+      u=umin;
+      stepU=true;
+      while (stepU){
+        if (u>umax){ u=umax; stepU=false; }
         onPt=srf->PointAt(u,v);
         pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
         painter->drawLine(pt0,pt);
         pt0=pt;
+        u+=ustep/4.;
       }
-    }    
+      v+=vstep;
+    }
+    
   }
 }

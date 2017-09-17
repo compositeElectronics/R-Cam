@@ -12,8 +12,10 @@ genericToolpath::genericToolpath(rcamObject *parent, QString type="toolpath") : 
     geom=&proj->model;
   }
 //  setting.append(new editableSetting(QString("tool"),  QString("Tool"),  QVariant((int)1), QVariant(0), QVariant(99999)));
+  setting.append(new editableSetting(QString("startZ"),  QString("Start Z"),  QVariant((double)0), QVariant((double)-100), QVariant((double)100)));
   setting.append(new editableSetting(QString("feedRate"), QString("Feed Rate"), QVariant((double)700), QVariant(0), QVariant(machine->maxFeed())));
   setting.append(new editableSetting(QString("toolRPM"),  QString("Tool RPM"),  QVariant((double)100), QVariant(0), QVariant(machine->maxCutterRPM())));
+  
 }
 
 void genericToolpath::createMenu(){
@@ -68,7 +70,7 @@ void genericToolpath::addGeometryByLayer(){
 }
 
 void genericToolpath::calculateToolPath(){
-  int i;
+  int i,j;
   int objIndex;
   int nSrfs;
   const ON_Curve* curve=0;
@@ -80,16 +82,17 @@ void genericToolpath::calculateToolPath(){
   path.clear();
 
   path.append("(Set feed and speed)");
-  sprintf(line,"F%lf\n", findSettingValue("feedRate").toDouble()); path.append(line);
+  sprintf(line,"#<stdFeed>=%lf", findSettingValue("feedRate").toDouble()); path.append(line);
+  path.append("F #<stdFeed>");
   sprintf(line,"S%lf\n", findSettingValue("toolRPM").toDouble());  path.append(line);
   
   path.append("G0 Z#<safeZ>");
 
   for (i=0;i<children.count();i++){
     geometry = dynamic_cast<geomReference*>(children[i]);
-    if (geometry==0) continue;
+//    if (geometry==0) continue;
     
-    printf("Calculating %s\n", geometry->label().toLatin1().data());
+    printf("Calculating %i - %s\n", i, geometry->label().toLatin1().data());
 
     for (objIndex=0;objIndex<geom->m_object_table.Count();objIndex++){
       const ONX_Model_Object &mo = geom->m_object_table[objIndex];
@@ -105,9 +108,9 @@ void genericToolpath::calculateToolPath(){
           case ON::brep_object:
             brep=ON_Brep::Cast(mo.m_object);
             nSrfs=brep->m_S.Count();
-            for (i=0;i<nSrfs;i++){
+            for (j=0;j<nSrfs;j++){
               path.append("G0 Z[#<workZ>+#<rapidZ>]");
-              calcToolPath(brep->m_S[i], geometry);
+              calcToolPath(brep->m_S[j], geometry);
               path.append("G0 Z[#<workZ>+#<rapidZ>]");
             }
             break;

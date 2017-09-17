@@ -23,6 +23,7 @@ void geomReference::finishConstruction(){
     case ON::brep_object:
       setting.append(new editableSetting(QString("stepU"),      QString("Span Step U"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
       setting.append(new editableSetting(QString("stepV"),      QString("Span Step V"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
+      setting.append(new editableSetting(QString("flipNormals"),QString("Flip Surface Normals"), QVariant((bool)false), QVariant((bool)false), QVariant((bool)true)));
       break;
   }  
   
