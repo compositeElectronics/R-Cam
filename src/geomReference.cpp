@@ -21,9 +21,10 @@ void geomReference::finishConstruction(){
       setting.append(new editableSetting(QString("step"),      QString("Span Step"),        QVariant((double)0.1), QVariant((double)0.001), QVariant((double)1)));
       break;
     case ON::brep_object:
-      setting.append(new editableSetting(QString("stepU"),      QString("Span Step U"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
-      setting.append(new editableSetting(QString("stepV"),      QString("Span Step V"),        QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
+      setting.append(new editableSetting(QString("stepOver"),   QString("Step Over distance"),   QVariant((double)0.5), QVariant((double)0.001), QVariant((double)10)));
+      setting.append(new editableSetting(QString("stepAlong"),  QString("Span Along distance"),  QVariant((double)0.1), QVariant((double)0.001), QVariant((double)10)));
       setting.append(new editableSetting(QString("flipNormals"),QString("Flip Surface Normals"), QVariant((bool)false), QVariant((bool)false), QVariant((bool)true)));
+      setting.append(new editableSetting(QString("domU"),       QString("U direction dominant"), QVariant((bool)true),  QVariant((bool)false), QVariant((bool)true)));
       break;
   }  
   

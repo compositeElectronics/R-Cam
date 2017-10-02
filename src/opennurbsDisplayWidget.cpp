@@ -246,20 +246,48 @@ void opennurbsDisplayWidget::drawCurveXY(QPainter *painter, const ON_Object* geo
 
 void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom, double ustep, double vstep){
   bool stepU, stepV;
-  int nSrfs, i;
+  int nSrfs, i, j;
   double u, v, umin, umax, vmin, vmax;
   const ON_Brep *brep=ON_Brep::Cast(geom);
+  ON_Curve *trm;
   ON_Surface *srf;
+  ON_MeshFaceRef meshFace;
   ON_3dPoint onPt;
   QPointF pt0, pt;
+  QPen stdPen, modPen;
   
   if (!brep) return;
+  /*
   nSrfs=brep->m_S.Count();
-//  printf("Object is a BREP with %i surfaces\n", nSrfs);
+  printf("Object is a BREP with %i surfaces\n", nSrfs);
+  printf("Object is a BREP with %i faces\n", brep->m_F.Count());
+  printf("BREP has %i edge curves\n", brep->m_E.Count());
+  printf("BREP has %i trim curves\n", brep->m_T.Count());
+  printf("BREP has %i trim loops\n", brep->m_L.Count());
+  */
+  stdPen=painter->pen();
   
-  for (i=0;i<nSrfs;i++){
-    srf=brep->m_S[i];
-//    printf("Surface %i...\n",i);
+  for (i=0;i<brep->m_F.Count();i++){
+    srf=(ON_Surface*)brep->m_F[i].SurfaceOf();
+//    printf("Face %i...\n",i);
+    
+//    srf->GetDomain(0, &umin, &umax);
+//    srf->GetDomain(1, &vmin, &vmax);
+//    u=vmin+(umax-umin)/50; v=vmin+(vmax-vmin)/50;
+//    ptIsInTrimmedAreaOfBREP((ON_Brep*)brep, u, v);
+//    onPt=srf->PointAt(u,v); pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+//    painter->drawEllipse(pt,5,5);
+    
+    // Draw render mesh - the bit we expect to be valid...
+//    painter->setPen(QColor(0,0,255));
+//    drawMeshXY(painter, brep->m_F[i].Mesh(ON::render_mesh));
+    modPen=stdPen; modPen.setWidth(2); painter->setPen(modPen);
+    for (j=0;j<brep->m_T.Count();j++){
+      trm=(ON_Curve*)brep->m_T[j].TrimCurveOf();      
+      drawBrepTrimCurveXY(painter, trm, srf);
+    }
+    painter->setPen(stdPen);
+    
     srf->GetDomain(0, &umin, &umax);
     srf->GetDomain(1, &vmin, &vmax);
 //    printf("Umin/Umax = %lf / %lf\n",umin,umax);
@@ -281,9 +309,9 @@ void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom
         if (v>vmax){ v=vmax; stepV=false; }
         onPt=srf->PointAt(u,v);
         pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
-        painter->drawLine(pt0,pt);
+        if (ptIsInTrimmedAreaOfBREP((ON_Brep*)brep, u, v)) painter->drawLine(pt0,pt);
         pt0=pt;
-        v+=vstep/4;
+        v+=vstep/12.;
       }
       u+=ustep;
     }
@@ -302,12 +330,87 @@ void opennurbsDisplayWidget::drawBrepXY(QPainter *painter, const ON_Object* geom
         if (u>umax){ u=umax; stepU=false; }
         onPt=srf->PointAt(u,v);
         pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
-        painter->drawLine(pt0,pt);
+        if (ptIsInTrimmedAreaOfBREP((ON_Brep*)brep, u, v)) painter->drawLine(pt0,pt);
         pt0=pt;
-        u+=ustep/4.;
+        u+=ustep/12.;
       }
       v+=vstep;
     }
     
+    // Label U
+    v=vmin+(vmax-vmin)/5.;
+    u=umin+(umax-umin)/5.;
+    
+    onPt=srf->PointAt(u,v);
+    pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+    
+    u=umin+2.*(umax-umin)/5.;
+    onPt=srf->PointAt(u,v);
+    pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+    painter->drawLine(pt0,pt);
+    painter->drawText(pt+QPointF(2,0), "U");
+    
+    v=vmin+1.05*(vmax-vmin)/5.;
+    u=umin+1.9*(umax-umin)/5.;
+    onPt=srf->PointAt(u,v);
+    pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+    painter->drawLine(pt,pt0);
+
+
+/*    
+    painter->setPen(QColor(0,125,0));    
+    // Mark region of surface...
+    for (u=umin;u<umax;u+=(umax-umin)/100){
+      for (v=vmin;v<vmax;v+=(vmax-vmin)/100){
+        if (ptIsInTrimmedAreaOfBREP((ON_Brep*)brep, u, v)){
+          onPt=srf->PointAt(u,v);
+          pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+          painter->drawPoint(pt);
+        }
+      }
+    }
+*/   
+  }
+}
+
+void opennurbsDisplayWidget::drawBrepTrimCurveXY(QPainter *painter, ON_Curve *trm, ON_Surface *srf){
+  double tStart, tEnd, step;
+  double t, tRange;
+  double u, v;
+  ON_3dPoint onPt, nxtPt;
+  QPointF pt0, pt;
+    
+  trm->GetDomain(&tStart, &tEnd);
+  tRange=tEnd-tStart;
+  step=tRange/100;
+  
+  for (t=tStart;t<=tEnd+.001;t+=step){
+    onPt=trm->PointAt(t);
+    onPt=srf->PointAt(onPt.x, onPt.y);
+    pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+    if (t>tStart+.001) painter->drawLine(pt,pt0);
+    pt0=pt;
+  }
+}
+
+void opennurbsDisplayWidget::drawMeshXY(QPainter *painter, const ON_Object* geom){
+  int j, k, vn;
+  ON_3dPoint onPt;
+  QPointF pt0, pt;
+  const ON_Mesh* msh=(ON_Mesh*)geom;
+  
+  if (!msh) return;
+  
+  for (j=0;j<msh->m_F.Count();j++){
+    vn=4;
+    if (msh->m_F[j].IsTriangle()) vn=3;
+    onPt=msh->Vertex(msh->m_F[j].vi[0]);
+    pt0=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+    for (k=1;k<vn;k++){
+      onPt=msh->Vertex(msh->m_F[j].vi[k]);
+      pt=QPointF(onPt.x, onPt.y*-1.)*scale+offset;
+      painter->drawLine(pt0,pt);
+      pt0=pt;
+    }
   }
 }

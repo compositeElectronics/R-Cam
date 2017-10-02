@@ -15,6 +15,7 @@ HEADERS += mainWindow.h \
            rcamObjectFactory.h \
            rcamProject.h \
            editableSetting.h \
+           geomHelper.h \
            geomReference.h \
            genericTool.h \
            engravingTool.h \
@@ -36,6 +37,7 @@ SOURCES += main.cpp \
            rcamObjectFactory.cpp \
            rcamProject.cpp \
            editableSetting.cpp \
+           geomHelper.cpp \
            geomReference.cpp \
            genericTool.cpp \
            engravingTool.cpp \

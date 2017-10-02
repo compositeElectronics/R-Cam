@@ -1,7 +1,7 @@
 #include "geomHelper.h"
 #include <QList>
 
-bool geomHelper::ptIsInTrimmedAreaOfBREP(ON_Brep *brep, double u, double v){
+bool geomHelper::ptIsInTrimmedAreaOfBREP(ON_Brep *brep, double u, double v, double quality){
   int i, nIsect;
   double t, tStart, tEnd, tStep, tl, th;
   bool stop;
@@ -29,7 +29,7 @@ bool geomHelper::ptIsInTrimmedAreaOfBREP(ON_Brep *brep, double u, double v){
 //    printf("Trim Curve %i\n",trmCrvIdx[i]);
     trm=(ON_Curve*)brep->m_T[trmCrvIdx[i]].TrimCurveOf();
     trm->GetDomain(&tStart, &tEnd);
-    tStep=(tEnd-tStart)/200.;
+    tStep=(tEnd-tStart)/quality;
     pt0=trm->PointAt(tStart);
     stop=false;
     for (t=tStart+tStep;t<tEnd+tStep/2;t+=tStep){
@@ -52,3 +52,61 @@ bool geomHelper::ptIsInTrimmedAreaOfBREP(ON_Brep *brep, double u, double v){
   return false;
 }
 
+double geomHelper::surfaceLengthU(const ON_Surface *srf){
+  int i, stations=5;
+  double u, v, uMin, uMax, vMin, vMax, uStep, vStep, length, maxLength;
+  ON_3dPoint pt0, pt1, delta;
+  
+  srf->GetDomain(0, &uMin, &uMax);
+  srf->GetDomain(1, &vMin, &vMax);
+
+  // Calculate lengths
+  // Average of 5 lengths in V
+  uStep=(uMax-uMin)/100.;
+  vStep=(vMax-vMin)/(double)stations;
+  maxLength=0;
+  for (v=vMin;v<vMax+vStep/2.;v+=vStep){
+    length=0;
+    pt0=srf->PointAt(u,v);
+    for (u=uMin;u<uMax+uStep/2.;u+=uStep){
+      pt1=srf->PointAt(u,v);
+      delta=pt1-pt0;
+      length+=sqrt(pow(delta.x,2)+pow(delta.y,2)+pow(delta.z,2));
+      pt0=pt1;
+    }
+//    printf("U Length = %lf\n", length);
+    if (length>maxLength) maxLength=length;
+  }
+//  printf("U Max Length = %lf\n", maxLength);
+  return maxLength;
+}
+
+double geomHelper::surfaceLengthV(const ON_Surface *srf){
+  int i, stations=5;
+  double u, v, uMin, uMax, vMin, vMax, uStep, vStep, length, maxLength;
+  ON_3dPoint pt0, pt1, delta;
+  
+  srf->GetDomain(0, &uMin, &uMax);
+  srf->GetDomain(1, &vMin, &vMax);
+  
+  // Calculate lengths
+  // Average of 5 lengths in V
+  uStep=(uMax-uMin)/(double)stations;
+  vStep=(vMax-vMin)/100.;
+  maxLength=0;
+  for (u=uMin;u<uMax+uStep/2.;u+=uStep){
+    length=0;
+    pt0=srf->PointAt(u,v);
+    for (v=vMin;v<vMax+vStep/2.;v+=vStep){
+      pt1=srf->PointAt(u,v);
+      delta=pt1-pt0;
+      length+=sqrt(pow(delta.x,2)+pow(delta.y,2)+pow(delta.z,2));
+      pt0=pt1;
+    }
+//    printf("V Length = %lf\n", length);
+    if (length>maxLength) maxLength=length;
+  }
+//  printf("V Max Length = %lf\n", maxLength);
+      
+  return maxLength;
+}

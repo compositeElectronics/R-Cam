@@ -110,7 +110,7 @@ void genericToolpath::calculateToolPath(){
             nSrfs=brep->m_S.Count();
             for (j=0;j<nSrfs;j++){
               path.append("G0 Z[#<workZ>+#<rapidZ>]");
-              calcToolPath(brep->m_S[j], geometry);
+              calcToolPath(brep, geometry, j);
               path.append("G0 Z[#<workZ>+#<rapidZ>]");
             }
             break;
@@ -124,7 +124,7 @@ void genericToolpath::calculateToolPath(){
 void genericToolpath::calcToolPath(const ON_Curve *curve, geomReference* geomRef){
 }
 
-void genericToolpath::calcToolPath(const ON_Surface* srf, geomReference* geomRef){
+void genericToolpath::calcToolPath(const ON_Brep* brep, geomReference* geomRef, int srfIdx){
 }
 
 void genericToolpath::writeToolPath(QIODevice *io){

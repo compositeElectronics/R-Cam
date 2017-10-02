@@ -4,9 +4,10 @@
   #include <QWidget>
   #include <QPen>
   #include "opennurbs_20130711/opennurbs.h"
+  #include "geomHelper.h"
   #include "geomReference.h"
 
-class opennurbsDisplayWidget : public QWidget
+class opennurbsDisplayWidget : public QWidget, geomHelper
 {
   Q_OBJECT
   public:
@@ -33,6 +34,8 @@ class opennurbsDisplayWidget : public QWidget
     void drawModelObject(QPainter *painter, int objIndex);
     void drawCurveXY(QPainter *painter, const ON_Object* geom, bool markers, bool reverse, double step);
     void drawBrepXY(QPainter *painter, const ON_Object* geom, double ustep, double vstep);
+    void drawBrepTrimCurveXY(QPainter *painter, ON_Curve *trm, ON_Surface *srf);
+    void drawMeshXY(QPainter *painter, const ON_Object* geom);
     
     QPen xAxisPen;
     QPen yAxisPen;

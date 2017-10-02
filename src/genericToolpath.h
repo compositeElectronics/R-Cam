@@ -29,7 +29,7 @@ class genericToolpath : public rcamObject
     
     void createMenu();
     virtual void calcToolPath(const ON_Curve *curve, geomReference* geomRef);
-    virtual void calcToolPath(const ON_Surface* srf, geomReference* geomRef);
+    virtual void calcToolPath(const ON_Brep* brep, geomReference* geomRef, int srfIdx);
     virtual void readXMLElement(QDomElement element);
     virtual void writeCustomXML(QIODevice *xml);
     
